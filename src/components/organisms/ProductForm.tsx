@@ -1,28 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import FormField from '../molecules/FormField';
 import Button from '../atoms/Button';
 import type { Product, CreateProductDto } from '../../models/Product';
-
-const IMGBB_API_KEY = '29bfea99aa30ac4112ec43eac8554d9c';
-
-async function uploadToImgbb(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append('image', file);
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-    method: 'POST',
-    body: formData,
-  });
-  if (!res.ok) throw new Error('Error al subir imagen');
-  const json = await res.json();
-  // Intentar diferentes campos de URL que provee imgbb
-  const url = json.data?.image?.url      // URL directa del archivo
-    ?? json.data?.thumb?.url             // Thumbnail
-    ?? json.data?.medium?.url            // Tamaño medio
-    ?? json.data?.display_url            // URL de display
-    ?? json.data?.url;                   // URL general
-  if (!url) throw new Error('No se pudo obtener la URL de la imagen');
-  return url as string;
-}
+import { uploadImage } from '../../services/imgbbService';
 
 interface ProductFormProps {
   initialData?: Product;
@@ -49,14 +29,18 @@ interface FormErrors {
 
 function validate(values: FormValues): FormErrors {
   const errors: FormErrors = {};
-  if (!values.nombre.trim() || values.nombre.trim().length < 2)
+  if (!values.nombre.trim() || values.nombre.trim().length < 2) {
     errors.nombre = 'El nombre debe tener al menos 2 caracteres.';
-  if (!values.tipo.trim())
+  }
+  if (!values.tipo.trim()) {
     errors.tipo = 'El tipo es requerido.';
-  if (!values.imagenUrl.trim())
+  }
+  if (!values.imagenUrl.trim()) {
     errors.imagenUrl = 'La imagen es requerida.';
-  if (isNaN(Number(values.precio)) || Number(values.precio) < 0)
+  }
+  if (isNaN(Number(values.precio)) || Number(values.precio) < 0) {
     errors.precio = 'El precio debe ser un número válido.';
+  }
   return errors;
 }
 
@@ -105,8 +89,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
     setErrors((prev) => ({ ...prev, imagenUrl: undefined }));
 
     try {
-      const url = await uploadToImgbb(file);
-      console.log('URL imgbb obtenida:', url);
+      const url = await uploadImage(file);
       setValues((prev) => ({ ...prev, imagenUrl: url }));
       setPreviewUrl(url);
     } catch {
@@ -139,15 +122,29 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      <FormField label="Nombre" id="nombre" name="nombre" value={values.nombre}
-        onChange={handleChange} onBlur={handleBlur} placeholder="Nombre del producto"
-        disabled={isDisabled} error={touched.nombre ? errors.nombre : undefined} />
+      <FormField
+        label="Nombre"
+        id="nombre"
+        name="nombre"
+        value={values.nombre}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="Nombre del producto"
+        disabled={isDisabled}
+        error={touched.nombre ? errors.nombre : undefined}
+      />
 
-      <FormField label="Descripción" id="descripcion" name="descripcion" value={values.descripcion}
-        onChange={handleChange} onBlur={handleBlur} placeholder="Descripción del producto"
-        disabled={isDisabled} />
+      <FormField
+        label="Descripción"
+        id="descripcion"
+        name="descripcion"
+        value={values.descripcion}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="Descripción del producto"
+        disabled={isDisabled}
+      />
 
-      {/* Imagen */}
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Imagen del producto</label>
 
@@ -162,23 +159,29 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
           </div>
         )}
 
-        <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isDisabled}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isDisabled}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-white w-fit disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ backgroundColor: '#2d7a2d' }}>
+          style={{ backgroundColor: '#2d7a2d' }}
+        >
           {uploading ? (
-            <><div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Subiendo...</>
+            <>
+              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Subiendo...
+            </>
           ) : (
             <>{previewUrl ? 'Cambiar imagen' : 'Seleccionar imagen'}</>
           )}
         </button>
 
         {values.imagenUrl && !uploading && (
-          <span className="text-xs font-medium" style={{ color: '#2d7a2d' }}>✓ Imagen lista</span>
+          <span className="text-xs font-medium" style={{ color: '#2d7a2d' }}>Imagen lista</span>
         )}
 
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
 
-        {/* También permitir ingresar URL manualmente */}
         <div className="mt-1">
           <label className="text-xs text-gray-500">O pega una URL de imagen:</label>
           <input
@@ -199,17 +202,41 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
         )}
       </div>
 
-      <FormField label="Tipo" id="tipo" name="tipo" value={values.tipo}
-        onChange={handleChange} onBlur={handleBlur} placeholder="Ej: Salchicha Americana"
-        disabled={isDisabled} error={touched.tipo ? errors.tipo : undefined} />
+      <FormField
+        label="Tipo"
+        id="tipo"
+        name="tipo"
+        value={values.tipo}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="Ej: Salchicha Americana"
+        disabled={isDisabled}
+        error={touched.tipo ? errors.tipo : undefined}
+      />
 
-      <FormField label="Precio" id="precio" name="precio" type="number" value={values.precio}
-        onChange={handleChange} onBlur={handleBlur} placeholder="0.00"
-        disabled={isDisabled} error={touched.precio ? errors.precio : undefined} />
+      <FormField
+        label="Precio"
+        id="precio"
+        name="precio"
+        type="number"
+        value={values.precio}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="0.00"
+        disabled={isDisabled}
+        error={touched.precio ? errors.precio : undefined}
+      />
 
       <div className="flex items-center gap-2">
-        <input id="activo" name="activo" type="checkbox" checked={values.activo}
-          onChange={handleChange} disabled={isDisabled} className="h-4 w-4 border-gray-300 rounded" />
+        <input
+          id="activo"
+          name="activo"
+          type="checkbox"
+          checked={values.activo}
+          onChange={handleChange}
+          disabled={isDisabled}
+          className="h-4 w-4 border-gray-300 rounded"
+        />
         <label htmlFor="activo" className="text-sm font-medium text-gray-700">Activo</label>
       </div>
 

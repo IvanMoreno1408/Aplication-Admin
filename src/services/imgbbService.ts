@@ -1,6 +1,10 @@
-const IMGBB_API_KEY = '29bfea99aa30ac4112ec43eac8554d9c';
+const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
 
 export async function uploadImage(file: File): Promise<string> {
+  if (!IMGBB_API_KEY) {
+    throw new Error('Falta configurar VITE_IMGBB_API_KEY');
+  }
+
   const base64 = await fileToBase64(file);
   // Quitar el prefijo "data:image/...;base64,"
   const base64Data = base64.split(',')[1];
@@ -18,7 +22,17 @@ export async function uploadImage(file: File): Promise<string> {
   }
 
   const json = await res.json();
-  return json.data.url as string;
+  const url = json.data?.image?.url
+    ?? json.data?.thumb?.url
+    ?? json.data?.medium?.url
+    ?? json.data?.display_url
+    ?? json.data?.url;
+
+  if (!url) {
+    throw new Error('No se pudo obtener la URL de la imagen');
+  }
+
+  return url as string;
 }
 
 function fileToBase64(file: File): Promise<string> {
