@@ -29,6 +29,7 @@ npm install
 ```env
 VITE_API_URL=/proxy-productos
 VITE_USERS_API_URL=/proxy-usuarios
+VITE_IMGBB_API_KEY=tu_api_key_de_imgbb
 ```
 
 3. Ejecutar en desarrollo:
@@ -149,5 +150,5 @@ El proyecto usa proxy en `vite.config.ts` para evitar problemas de CORS en local
 
 ## Notas
 
-- Actualmente la llave de ImgBB está definida de forma fija en `src/services/imgbbService.ts`.
-- Recomendación: mover esa llave a una variable de entorno (por ejemplo `VITE_IMGBB_API_KEY`) para mejorar seguridad y mantenimiento.
+- Para la carga de imágenes, configura `VITE_IMGBB_API_KEY` en tu entorno local.
+- No subas credenciales reales al repositorio.
