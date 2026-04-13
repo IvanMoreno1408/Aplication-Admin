@@ -4,6 +4,7 @@ import type { InternalAxiosRequestConfig } from 'axios';
 // Cliente para la API de productos
 const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  timeout: 10000, // 10 segundos máximo
 });
 
 httpClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
@@ -28,6 +29,7 @@ httpClient.interceptors.response.use(
 // Cliente para la API de usuarios/auth
 export const usersHttpClient = axios.create({
   baseURL: import.meta.env.VITE_USERS_API_URL,
+  timeout: 10000,
 });
 
 usersHttpClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {

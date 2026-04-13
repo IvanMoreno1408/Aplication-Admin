@@ -45,13 +45,26 @@ const LoginPage: React.FC = () => {
       login(authResponse);
       navigate('/dashboard');
     } catch (err: unknown) {
-      let message = 'Credenciales inválidas.';
+      let message = 'Correo o contraseña incorrectos.';
       if (err && typeof err === 'object') {
-        const e = err as { response?: { data?: { error?: string }; status?: number }; message?: string };
-        if (e.response?.data?.error) message = e.response.data.error;
-        else if (e.response?.status === 401) message = 'Email o contraseña incorrectos.';
-        else if (e.message?.toLowerCase().includes('network') || e.message?.toLowerCase().includes('connect'))
-          message = 'No se pudo conectar al servidor.';
+        const e = err as {
+          response?: { data?: { error?: string; message?: string }; status?: number };
+          message?: string;
+          code?: string;
+        };
+        if (e.response?.status === 401 || e.response?.status === 403) {
+          message = 'Correo o contraseña incorrectos.';
+        } else if (e.response?.data?.error) {
+          message = e.response.data.error;
+        } else if (e.response?.data?.message) {
+          message = e.response.data.message;
+        } else if (e.message && (e.message.toLowerCase().includes('network') || e.message.toLowerCase().includes('connect'))) {
+          message = 'No se pudo conectar al servidor. Verifica tu conexión.';
+        } else if (e.message?.toLowerCase().includes('timeout') || e.code === 'ECONNABORTED') {
+          message = 'El servidor tardó demasiado en responder. Intenta de nuevo.';
+        } else if (e.message) {
+          message = e.message;
+        }
       }
       setApiError(message);
     } finally {

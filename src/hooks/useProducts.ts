@@ -15,7 +15,10 @@ export function useProducts() {
       const data = await productService.getAll();
       setProducts(data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al cargar productos';
+      const isTimeout = err instanceof Error && (err.message.includes('timeout') || (err as { code?: string }).code === 'ECONNABORTED');
+      const message = isTimeout
+        ? 'El servidor tardó demasiado. Intenta de nuevo.'
+        : err instanceof Error ? err.message : 'Error al cargar productos';
       setError(message);
       showToast('error', message);
     } finally {

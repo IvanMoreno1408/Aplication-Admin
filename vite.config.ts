@@ -1,9 +1,10 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
+import { loadEnv } from 'vite';
+import type { ProxyOptions } from 'vite';
 
-// Tailwind + PostCSS config consolidado aquí
 const tailwindConfig = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
@@ -20,36 +21,41 @@ const tailwindConfig = {
   plugins: [],
 };
 
-export default defineConfig({
-  plugins: [react()],
-  css: {
-    postcss: {
-      plugins: [
-        tailwindcss(tailwindConfig),
-        autoprefixer(),
-      ],
-    },
-  },
-  server: {
-    proxy: {
-      '/proxy-productos': {
-        target: 'https://apiproducto-fnccb2e9g8a8dzak.brazilsouth-01.azurewebsites.net',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/proxy-productos/, ''),
-        secure: true,
-      },
-      '/proxy-usuarios': {
-        target: 'https://apiusers-d8drfrcbawbmekgm.brazilsouth-01.azurewebsites.net',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/proxy-usuarios/, ''),
-        secure: true,
-      },
-      '/proxy-imgbb': {
-        target: 'https://i.ibb.co',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/proxy-imgbb/, ''),
-        secure: true,
+function buildProxy(target: string | undefined, prefix: string): ProxyOptions | undefined {
+  if (!target) {
+    return undefined;
+  }
+
+  return {
+    target,
+    changeOrigin: true,
+    rewrite: (path) => path.replace(new RegExp(`^${prefix}`), ''),
+    secure: true,
+  };
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const productProxy = buildProxy(env.VITE_PROXY_PRODUCTS_TARGET, '/proxy-productos');
+  const usersProxy = buildProxy(env.VITE_PROXY_USERS_TARGET, '/proxy-usuarios');
+
+  return {
+    plugins: [react()],
+    css: {
+      postcss: {
+        plugins: [tailwindcss(tailwindConfig), autoprefixer()],
       },
     },
-  },
+    test: {
+      globals: true,
+      environment: 'happy-dom',
+      setupFiles: ['./src/test/setup.ts'],
+    },
+    server: {
+      proxy: {
+        ...(productProxy ? { '/proxy-productos': productProxy } : {}),
+        ...(usersProxy ? { '/proxy-usuarios': usersProxy } : {}),
+      },
+    },
+  };
 });
