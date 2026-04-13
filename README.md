@@ -24,7 +24,7 @@ Panel administrativo web para autenticación y gestión de productos.
 npm install
 ```
 
-2. Editar `.env` con tus propias URLs y llaves. No subas ese archivo al repositorio.
+2. Editar `.env` con tus propias variables locales. No subas ese archivo al repositorio.
 
 3. Ejecutar en desarrollo:
 
@@ -134,6 +134,20 @@ application-admins/
 - El token se guarda en `localStorage` con la llave `token`.
 - Se adjunta automáticamente en `Authorization: Bearer <token>` para cada request.
 - Ante respuestas `401`, se limpia el token y se redirige al login.
+
+## Desarrollo Local Y Producción
+
+- La app toma `VITE_API_URL`, `VITE_USERS_API_URL` y `VITE_IMGBB_API_KEY` directamente desde variables de entorno.
+- En desarrollo local puedes usar `/proxy-productos` y `/proxy-usuarios` como valores de `.env`.
+- El servidor de Vite redirige esos proxies al backend real usando `VITE_PROXY_PRODUCTS_TARGET` y `VITE_PROXY_USERS_TARGET`.
+- En producción debes definir `VITE_API_URL` y `VITE_USERS_API_URL` durante el build.
+
+## Azure Static Web Apps
+
+- No subas `.env` al repositorio.
+- Si Azure compila la app, puedes definir variables de build como `VITE_API_URL`, `VITE_USERS_API_URL` y `VITE_IMGBB_API_KEY`.
+- `VITE_PROXY_PRODUCTS_TARGET` y `VITE_PROXY_USERS_TARGET` solo aplican al desarrollo local con Vite.
+- En Azure Static Web Apps ya no hay fallback hardcodeado: debes definir `VITE_API_URL` y `VITE_USERS_API_URL` para producción.
 
 ## Publicación segura en GitHub
 

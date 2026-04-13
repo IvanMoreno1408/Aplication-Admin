@@ -1,9 +1,10 @@
 import axios from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
+import { appConfig } from '../config/appConfig';
 
 // Cliente para la API de productos
 const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: appConfig.productsApiUrl,
   timeout: 10000, // 10 segundos máximo
 });
 
@@ -28,7 +29,7 @@ httpClient.interceptors.response.use(
 
 // Cliente para la API de usuarios/auth
 export const usersHttpClient = axios.create({
-  baseURL: import.meta.env.VITE_USERS_API_URL,
+  baseURL: appConfig.usersApiUrl,
   timeout: 10000,
 });
 

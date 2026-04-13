@@ -1,4 +1,6 @@
-const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
+import { appConfig } from '../config/appConfig';
+
+const IMGBB_API_KEY = appConfig.imgbbApiKey;
 
 export async function uploadImage(file: File): Promise<string> {
   if (!IMGBB_API_KEY) {
