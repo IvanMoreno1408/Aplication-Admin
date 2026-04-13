@@ -24,19 +24,9 @@ Panel administrativo web para autenticación y gestión de productos.
 npm install
 ```
 
-2. Configurar las variables de entorno en `.env`:
+2. Editar `.env` con tus propias URLs y llaves. No subas ese archivo al repositorio.
 
-```env
-VITE_API_URL=/proxy-productos
-VITE_USERS_API_URL=/proxy-usuarios
-VITE_PROXY_PRODUCTS_TARGET=https://tu-api-de-productos.example.com
-VITE_PROXY_USERS_TARGET=https://tu-api-de-usuarios.example.com
-VITE_IMGBB_API_KEY=tu_api_key_de_imgbb
-```
-
-3. Editar `.env` con tus propias URLs y llaves. No subas ese archivo al repositorio.
-
-4. Ejecutar en desarrollo:
+3. Ejecutar en desarrollo:
 
 ```bash
 npm run dev
@@ -138,15 +128,6 @@ application-admins/
 ├── vite.config.ts                                # Configuración de Vite y proxy
 └── README.md                                     # Documentación del proyecto
 ```
-
-## APIs y proxy (desarrollo)
-
-El proyecto usa proxy en `vite.config.ts` para evitar problemas de CORS en local. Los targets ahora salen de variables de entorno:
-
-- `VITE_API_URL`: base URL usada por el cliente de productos
-- `VITE_USERS_API_URL`: base URL usada por el cliente de usuarios/auth
-- `VITE_PROXY_PRODUCTS_TARGET`: destino real del proxy de productos en desarrollo
-- `VITE_PROXY_USERS_TARGET`: destino real del proxy de usuarios en desarrollo
 
 ## Autenticación
 
