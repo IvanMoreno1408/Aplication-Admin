@@ -6,11 +6,9 @@ const productService = {
     return httpClient.get<Product[]>('/api/productos').then((res) => res.data);
   },
 
-  // imagenUrl se envía como query param (el backend la recibe con @RequestParam)
   create(data: CreateProductDto): Promise<Product> {
-    const { imagenUrl, ...body } = data;
     return httpClient
-      .post<Product>('/api/productos', body, { params: { imagenUrl } })
+      .post<Product>('/api/productos', data)
       .then((res) => res.data);
   },
 
