@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import type { Product } from '../../models/Product';
 import SearchBar from '../molecules/SearchBar';
 import Pagination from '../molecules/Pagination';
@@ -21,6 +21,25 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products, loading, onEdit
 
   const uniqueTypes = useMemo(() => Array.from(new Set(products.map((p) => p.tipo))).sort(), [products]);
 
+  // Reset to page 1 whenever the products list is replaced (e.g. after a CRUD refresh)
+  // so the current page never points past the end of the new dataset.
+  useEffect(() => { setPage(1); }, [products]);
+
+  const handleSearch = useCallback((v: string) => {
+    setSearchQuery(v);
+    setPage(1);
+  }, []);
+
+  const handleTypeFilter = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTypeFilter(e.target.value);
+    setPage(1);
+  }, []);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPage(1);
+  }, []);
+
   const filtered = useMemo(() =>
     products.filter((p) => {
       const matchesName = p.nombre.toLowerCase().includes(searchQuery.toLowerCase());
@@ -33,21 +52,13 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products, loading, onEdit
     return filtered.slice(start, start + pageSize);
   }, [filtered, page, pageSize]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-16">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row gap-3">
-        <SearchBar onSearch={(v) => { setSearchQuery(v); setPage(1); }} placeholder="Buscar por nombre..." className="flex-1" />
+        <SearchBar onSearch={handleSearch} placeholder="Buscar por nombre..." className="flex-1" />
         <select
           value={typeFilter}
-          onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+          onChange={handleTypeFilter}
           aria-label="Filtrar por tipo"
           className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-green"
         >
@@ -69,7 +80,15 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products, loading, onEdit
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {paginated.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-16 text-center">
+                  <div className="flex justify-center items-center">
+                    <Spinner size="lg" />
+                  </div>
+                </td>
+              </tr>
+            ) : paginated.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
                   No se encontraron productos.
@@ -123,7 +142,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products, loading, onEdit
         pageSize={pageSize}
         total={filtered.length}
         onPageChange={setPage}
-        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        onPageSizeChange={handlePageSizeChange}
       />
     </div>
   );

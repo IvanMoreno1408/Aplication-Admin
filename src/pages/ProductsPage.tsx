@@ -13,7 +13,7 @@ const ProductsPage: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const handleCreateSubmit = async (data: CreateProductDto) => {
     await createProduct(data);

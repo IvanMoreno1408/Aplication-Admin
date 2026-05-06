@@ -65,6 +65,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
         activo: initialData.activo,
       });
       setPreviewUrl(initialData.imagenUrl);
+    } else {
+      setValues({ nombre: '', descripcion: '', imagenUrl: '', tipo: '', precio: '0', activo: true });
+      setPreviewUrl('');
+      setErrors({});
+      setTouched({});
     }
   }, [initialData]);
 
@@ -84,7 +89,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setPreviewUrl(URL.createObjectURL(file));
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
     setUploading(true);
     setErrors((prev) => ({ ...prev, imagenUrl: undefined }));
 
@@ -97,6 +103,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
       setValues((prev) => ({ ...prev, imagenUrl: '' }));
       setPreviewUrl('');
     } finally {
+      URL.revokeObjectURL(objectUrl);
       setUploading(false);
     }
   };

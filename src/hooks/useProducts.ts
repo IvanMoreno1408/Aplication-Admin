@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useProductContext } from '../context/ProductContext';
 import { useUIContext } from '../context/UIContext';
 import productService from '../services/productService';
@@ -8,7 +9,7 @@ export function useProducts() {
     useProductContext();
   const { showToast } = useUIContext();
 
-  async function fetchProducts(): Promise<void> {
+  const fetchProducts = useCallback(async (): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
@@ -24,9 +25,9 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [setLoading, setError, setProducts, showToast]);
 
-  async function createProduct(data: CreateProductDto): Promise<void> {
+  const createProduct = useCallback(async (data: CreateProductDto): Promise<void> => {
     setLoading(true);
     try {
       await productService.create(data);
@@ -39,9 +40,9 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [setLoading, setProducts, showToast]);
 
-  async function updateProduct(id: number, data: UpdateProductDto): Promise<void> {
+  const updateProduct = useCallback(async (id: number, data: UpdateProductDto): Promise<void> => {
     setLoading(true);
     try {
       await productService.update(id, data);
@@ -54,9 +55,9 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [setLoading, setProducts, showToast]);
 
-  async function deleteProduct(id: number): Promise<void> {
+  const deleteProduct = useCallback(async (id: number): Promise<void> => {
     setLoading(true);
     try {
       await productService.delete(id);
@@ -69,7 +70,7 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [setLoading, setProducts, showToast]);
 
   return {
     products,
