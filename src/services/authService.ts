@@ -5,12 +5,11 @@ const authService = {
   async login(credentials: { email: string; password: string }): Promise<AuthResponse> {
     const res = await usersHttpClient.post<{ token?: string; error?: string }>(
       '/api/auth/login',
-      null,
       {
-        params: {
-          email: credentials.email,
-          password: credentials.password,
-        },
+        email: credentials.email,
+        password: credentials.password,
+      },
+      {
         // No lanzar excepción en 401 — lo manejamos manualmente
         validateStatus: (status) => status < 500,
       }
