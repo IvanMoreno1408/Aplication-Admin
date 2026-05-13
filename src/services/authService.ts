@@ -3,14 +3,16 @@ import type { AuthResponse } from '../models/AuthResponse';
 
 const authService = {
   async login(credentials: { email: string; password: string }): Promise<AuthResponse> {
+    // El servidor requiere application/x-www-form-urlencoded
+    const params = new URLSearchParams();
+    params.append('email', credentials.email);
+    params.append('password', credentials.password);
+
     const res = await usersHttpClient.post<{ token?: string; error?: string }>(
       '/api/auth/login',
+      params,
       {
-        email: credentials.email,
-        password: credentials.password,
-      },
-      {
-        // No lanzar excepción en 401 — lo manejamos manualmente
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         validateStatus: (status) => status < 500,
       }
     );

@@ -43,8 +43,11 @@ usersHttpClient.interceptors.request.use((config: InternalAxiosRequestConfig) =>
 
 usersHttpClient.interceptors.response.use(
   (response) => response,
-  (error: { response?: { status: number } }) => {
-    if (error.response?.status === 401) {
+  (error: { response?: { status: number; config?: { url?: string } }; config?: { url?: string } }) => {
+    const url = error.config?.url ?? '';
+    // No redirigir en el endpoint de login — authService lo maneja manualmente
+    const isAuthEndpoint = url.includes('/auth/login');
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
